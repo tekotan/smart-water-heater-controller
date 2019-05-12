@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import actions
+from . import actions
 
 control_column = [
     [sg.Text("Controls", justification="center", font=("Helvetica", 15), size=(23, 1))],
@@ -51,12 +51,18 @@ layout = [
 
 window = sg.Window("Window Title", layout)
 
-while True:  # Event Loop
-    event, values = window.Read()
-    window.Element("On/Off").Update(
-        "The boiler is currently " + actions.get_boiler_state()
-    )
-    print(event, values)
-    if event is None or event == "Exit":
-        break
-window.Close()
+
+def main():
+    while True:  # Event Loop
+        event, values = window.Read()
+        window.Element("On/Off").Update(
+            "The boiler is currently " + actions.get_boiler_state()
+        )
+        print(event, values)
+        if event is None or event == "Exit":
+            break
+    window.Close()
+
+
+if __name__ == "__main__":
+    main()
