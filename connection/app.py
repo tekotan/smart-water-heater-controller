@@ -9,6 +9,14 @@ def hello_world():
     return "Hello, World!"
 
 
+@app.route("/<simple_state>")
+def turn_on(simple_state):
+    if simple_state == "on":
+        core.turn_on()
+    elif simple_state == "off":
+        core.turn_off()
+
+
 @app.route(
     "/<int:on_or_off>/<int:vacation>/<int:temperature_perc>/<power_saving>/<int:always_on>"
 )
