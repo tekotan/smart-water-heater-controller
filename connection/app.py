@@ -17,10 +17,8 @@ def turn_on(simple_state):
         core.turn_off()
 
 
-@app.route(
-    "/<int:on_or_off>/<int:vacation>/<int:temperature_perc>/<power_saving>/<int:always_on>"
-)
-def change_state(on_or_off, vacation, temperature_perc, power_saving, always_on):
+@app.route("/<int:on_or_off>/<int:vacation>/<int:temperature_perc>/<int:always_on>")
+def change_state(on_or_off, vacation, temperature_perc, always_on):
     try:
         core.change_state(
             on_or_off, vacation, temperature_perc, power_saving, always_on
