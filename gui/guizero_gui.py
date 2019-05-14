@@ -5,7 +5,7 @@ app = App(title="Smart Boiler Controller", layout="grid", width=480, height=320)
 title = Text(app, text="Smart Boiler Controller", size=30, grid=[0, 0, 2, 1])
 title_message = Text(
     app,
-    text="The Boiler is Currently " + actions.get_boiler_state(),
+    text="The Boiler is Currently " + actions.get_on_or_off(),
     size=23,
     grid=[0, 1, 2, 1],
 )
@@ -19,7 +19,7 @@ temp_slider = Slider(controls)
 temp_slider.text_size = 7
 simple_title = Text(controls, text="Simple Controls for Boiler", size=12)
 simple_radio = ButtonGroup(
-    controls, options=["on", "off"], horizontal=True, selected=actions.get_on_or_off()
+    controls, options=["on", "off"], horizontal=True, selected=actions._or_off()
 )
 vacation = CheckBox(controls, text="Vacation Settings")
 always_on = CheckBox(controls, text="Always On")

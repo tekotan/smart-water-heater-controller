@@ -4,9 +4,9 @@ import boiler.boiler_actions as core
 app = Flask(__name__)
 
 
-@app.route("/get_boiler_state")
+@app.route("/get_simple_state")
 def hello_world():
-    return "Hello, World!"
+    return "on"
 
 
 @app.route("/<simple_state>")
@@ -20,7 +20,7 @@ def turn_on(simple_state):
 @app.route(
     "/<int:on_or_off>/<int:vacation>/<int:temperature_perc>/<power_saving>/<int:always_on>"
 )
-def test_return(on_or_off, vacation, temperature_perc, power_saving, always_on):
+def change_state(on_or_off, vacation, temperature_perc, power_saving, always_on):
     try:
         core.change_state(
             on_or_off, vacation, temperature_perc, power_saving, always_on
