@@ -11,7 +11,6 @@ title_message = Text(
 )
 
 controls = Box(app, grid=[0, 2], width=240, height=310)
-controls.repeat(1000, actions.update_gui, args=())
 controls.bg = "beige"
 controls_title = Text(controls, text="Controls", size=18)
 temp_title = Text(controls, text="Temperature", size=12)
@@ -19,12 +18,22 @@ temp_slider = Slider(controls)
 temp_slider.text_size = 7
 simple_title = Text(controls, text="Simple Controls for Boiler", size=12)
 simple_radio = ButtonGroup(
-    controls, options=["on", "off"], horizontal=True, selected=actions._or_off()
+    controls, options=["on", "off"], horizontal=True, selected=actions.get_on_or_off()
 )
 vacation = CheckBox(controls, text="Vacation Settings")
 always_on = CheckBox(controls, text="Always On")
-update = PushButton(controls, text="Update Settings", padx=5, pady=5)
+update = PushButton(
+    controls,
+    text="Update Settings",
+    padx=5,
+    pady=5,
+    command=actions.change_state,
+    args=[temp_slider, simple_radio, vacation, always_on],
+)
 update.bg = "blue"
+controls.repeat(
+    1000, actions.update_gui, args=[temp_slider, simple_radio, vacation, always_on]
+)
 
 data = Box(app, grid=[1, 2], width=240, height=310)
 data.bg = "beige"
