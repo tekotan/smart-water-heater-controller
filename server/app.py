@@ -9,7 +9,7 @@ def hello_world():
     return "on"
 
 
-@app.route("/<simple_state>")
+@app.route("/simple_state/<simple_state>")
 def turn_on(simple_state):
     if simple_state == "on":
         core.turn_on()
