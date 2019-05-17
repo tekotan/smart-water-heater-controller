@@ -39,5 +39,5 @@ data = Box(app, grid=[1, 2], width=240, height=310)
 data.bg = "beige"
 data_title = Text(data, text="Data", size=18)
 graph = Picture(data, image="test.png", width=200, height=200)
-data.repeat(1000, actions.update_graph, args=[graph])
+data.repeat(900000, actions.update_graph, args=[graph])
 app.display()

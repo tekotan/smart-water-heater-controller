@@ -25,6 +25,13 @@ def change_state(on_or_off, vacation, temperature_perc, always_on):
     except:
         return "There was an unexpected issue"
 
+@app.route("/data/<data_list>")
+def change_data(data_list):
+    core.my_boiler(data_list)
+    
+@app.route("/get_data")
+def get_data():
+    return ", ".join(core.my_boiler.data)
 
 if __name__ == "__main__":
     app.run()

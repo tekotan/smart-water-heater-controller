@@ -4,6 +4,7 @@ class Boiler:
         self.temperature_perc = 0
         self.vacation = False
         self.always_on = False
+        self.data = []
 
     def change_state(self, on_or_off, vacation, temperature_perc, always_on):
         self.always_on = True
@@ -17,6 +18,9 @@ class Boiler:
         ret_list = f"{int(self.temperature_perc)}, {int(self.on)}, {int(self.vacation)}, {int(self.always_on)}"
         print(ret_list)
         return ret_list
+    
+    def change_data(self, data):
+        self.data = data.split(", ")
 
 
 my_boiler = Boiler()

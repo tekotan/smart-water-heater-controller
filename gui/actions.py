@@ -8,7 +8,10 @@ def get_on_or_off():
     return state.text
 
 
-def update_gui(temp_slider, simple_radio, vacation, always_on):
+def update_gui(temp_slider, simple_radio, vacatio
+
+4
+n, always_on):
     state = requests.get(f"{BASE_SERVER_URL}/get_boiler_state")
     values = state.text.split(", ")
     temp_slider.value = int(values[0])

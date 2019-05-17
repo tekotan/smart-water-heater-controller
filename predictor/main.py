@@ -24,6 +24,7 @@ try:
             requests.get(BASE_SERVER_URL + "/simple_state/off")
         elif prediction == 1:
             requests.get(BASE_SERVER_URL + "/simple_state/on")
+        requests.get("data/" + ", ".join(total_data))
 except:
     sns.cleanup()
     print("Exiting...")
