@@ -2,9 +2,12 @@ import RPi.GPIO as GPIO
 import time
 
 GPIO.setmode(GPIO.BOARD)
-SERVO_PIN = 14
+SERVO_PIN = 16
+SERVO_INPUT = 12
 GPIO.setup(SERVO_PIN, GPIO.OUT)
+GPIO.setup(SERVO_INPUT, GPIO.OUT)
 
+GPIO.output(SERVO_INPUT, GPIO.HIGH)
 time.sleep(2)
 pwm = GPIO.PWM(SERVO_PIN, 50)
 pwm.start(5)
