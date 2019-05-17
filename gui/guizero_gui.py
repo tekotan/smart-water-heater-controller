@@ -32,7 +32,7 @@ update = PushButton(
 )
 update.bg = "blue"
 controls.repeat(
-    1000, actions.update_gui, args=[temp_slider, simple_radio, vacation, always_on]
+    10000, actions.update_gui, args=[temp_slider, simple_radio, vacation, always_on]
 )
 
 data = Box(app, grid=[1, 2], width=240, height=310)
