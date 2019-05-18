@@ -1,7 +1,7 @@
 import gpiozero as gz
 import time
 
-my_servo = gz.Servo(26)
+my_servo = gz.Servo(16)
 my_servo.value = None
 
 
