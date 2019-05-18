@@ -28,18 +28,15 @@ def turn_on(simple_state):
 
 @app.route("/<int:on_or_off>/<int:vacation>/<int:temperature_perc>/<int:always_on>")
 def change_state(on_or_off, vacation, temperature_perc, always_on):
-    try:
-        core.change_state(on_or_off, vacation, temperature_perc, always_on)
-        # Dummy servo spin
-        mo.update(0.5)
-        return "Worked"
-    except:
-        return "There was an unexpected issue"
+    core.change_state(on_or_off, vacation, temperature_perc, always_on)
+    # Dummy servo spin
+    mo.update(0.5)
+    return "Worked"
 
 
 @app.route("/data/<data_list>")
 def change_data(data_list):
-    core.my_boiler(data_list)
+    core.my_boiler.change_data(data_list)
 
 
 @app.route("/get_data")
