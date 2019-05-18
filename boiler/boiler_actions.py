@@ -15,10 +15,17 @@ class Boiler:
         print("changed_state")
 
     def get_state(self):
-        ret_list = f"{int(self.temperature_perc)}, {int(self.on)}, {int(self.vacation)}, {int(self.always_on)}"
+        ret_list = ", ".join(
+            [
+                int(self.temperature_perc),
+                int(self.on),
+                int(self.vacation),
+                int(self.always_on),
+            ]
+        )
         print(ret_list)
         return ret_list
-    
+
     def change_data(self, data):
         self.data = data.split(", ")
 

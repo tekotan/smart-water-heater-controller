@@ -1,5 +1,5 @@
 from guizero import App, Text, Slider, CheckBox, PushButton, Picture, ButtonGroup, Box
-import actions as actions
+import actions
 
 app = App(title="Smart Boiler Controller", layout="grid", width=480, height=200)
 title = Text(app, text="Smart Boiler Controller", size=20, grid=[0, 0, 2, 1])

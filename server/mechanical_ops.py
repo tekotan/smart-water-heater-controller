@@ -1,16 +1,10 @@
-import RPi.GPIO as GPIO
+import gpiozero as gz
 import time
 
-GPIO.setmode(GPIO.BOARD)
-SERVO_PIN=37 
-GPIO.setup(SERVO_PIN, GPIO.OUT)
-
-time.sleep(2)
-pwm = GPIO.PWM(SERVO_PIN, 50)
-pwm.start(5)
+my_servo = gz.Servo(26)
 
 
-def update(self, angle):
-    # insert calculated linear function for the servo
-    duty = float(angle) / 10.0 + 2.5
-    pwm.ChangeDutyCycle(duty)
+def update(time):
+    my_servo.value = 0.1
+    time.sleep(time)
+    my_servo.value = None
