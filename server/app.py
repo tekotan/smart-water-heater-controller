@@ -28,9 +28,9 @@ def turn_on(simple_state):
 
 @app.route("/<int:on_or_off>/<int:vacation>/<int:temperature_perc>/<int:always_on>")
 def change_state(on_or_off, vacation, temperature_perc, always_on):
+    temp_diff = temperature_perc - core.my_boiler.temperature_perc
     core.change_state(on_or_off, vacation, temperature_perc, always_on)
     # Dummy servo spin
-    temp_diff = temperature_perc - core.my_boiler.temperature_perc
     if temp_diff > 0:
         mo.update(0.3)
     else:
