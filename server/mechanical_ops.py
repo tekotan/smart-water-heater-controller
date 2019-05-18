@@ -11,6 +11,6 @@ def update(seconds):
         time.sleep(seconds)
         my_servo.value = None
     else:
-        my_servo.value = -0.2
+        my_servo.value = -0.9
         time.sleep(abs(seconds))
         my_servo.value = None
