@@ -1,16 +1,16 @@
 from guizero import App, Text, Slider, CheckBox, PushButton, Picture, ButtonGroup, Box
 import actions as actions
 
-app = App(title="Smart Boiler Controller", layout="grid", width=480, height=320)
-title = Text(app, text="Smart Boiler Controller", size=30, grid=[0, 0, 2, 1])
+app = App(title="Smart Boiler Controller", layout="grid", width=480, height=200)
+title = Text(app, text="Smart Boiler Controller", size=20, grid=[0, 0, 2, 1])
 title_message = Text(
     app,
     text="The Boiler is Currently " + actions.get_on_or_off(),
-    size=23,
+    size=15,
     grid=[0, 1, 2, 1],
 )
 
-controls = Box(app, grid=[0, 2], width=240, height=310)
+controls = Box(app, grid=[0, 2], width=240, height=210)
 controls.bg = "beige"
 controls_title = Text(controls, text="Controls", size=18)
 temp_title = Text(controls, text="Temperature", size=12)
@@ -35,9 +35,9 @@ controls.repeat(
     10000, actions.update_gui, args=[temp_slider, simple_radio, vacation, always_on]
 )
 
-data = Box(app, grid=[1, 2], width=240, height=310)
+data = Box(app, grid=[1, 2], width=240, height=210)
 data.bg = "beige"
 data_title = Text(data, text="Data", size=18)
-graph = Picture(data, image="test.png", width=200, height=200)
+graph = Picture(data, image="test.png", width=150, height=150)
 data.repeat(900000, actions.update_graph, args=[graph])
 app.display()
