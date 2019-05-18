@@ -30,7 +30,8 @@ def turn_on(simple_state):
 def change_state(on_or_off, vacation, temperature_perc, always_on):
     core.change_state(on_or_off, vacation, temperature_perc, always_on)
     # Dummy servo spin
-    mo.update(0.5)
+    temp_diff = temperature_perc - core.my_boiler.temperature_perc
+    mo.update(temp_diff / 100)
     return "Worked"
 
 
