@@ -17,10 +17,10 @@ class Boiler:
     def get_state(self):
         ret_list = ", ".join(
             [
-                int(self.temperature_perc),
-                int(self.on),
-                int(self.vacation),
-                int(self.always_on),
+                str(int(self.temperature_perc)),
+                str(int(self.on)),
+                str(int(self.vacation)),
+                str(int(self.always_on)),
             ]
         )
         print(ret_list)
