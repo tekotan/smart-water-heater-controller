@@ -1,0 +1,114 @@
+.special {
+   color: #fff; 
+   background-color: #343a40;
+   transition: all 1s ease-out;
+}
+
+.current{
+   background-color:  #6c757d; 
+}
+
+.special:hover{
+    color: #6c757d;
+}
+
+.navbar {
+    background-color: #343a40;
+}
+
+
+.nav-img {
+    border-radius: 50%;
+    height: 5%;
+    width: 5%;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.veryspecial {
+    color: #fff;
+    background-color: #343a40;
+    transition: all .5s ease-out;
+}
+
+
+.large {
+    font-size: 100px;
+    color: rgb(245, 245, 245);
+    transition: all .5s ease-out;
+}
+
+.large:hover {
+    color:  #6c757d;
+    font-size: 125px;
+}
+
+.exlarge {
+    font-size: 200px;
+    color: #343a40;
+    transition: all 1s ease-out;
+}
+
+.exlarge:hover {
+    color:  #6c757d;
+    font-size: 250px;
+}
+
+.nomargin{
+    margin-bottom: 0px;
+}
+
+.nopadding {
+    padding-bottom: 0px;
+}
+
+.myimg {
+    position: relative;
+    bottom: 200px;
+}
+
+.txtlarge {
+    font-size: 100px;
+}
+
+.nav-item {
+    padding: 10px;
+}
+
+.nav-link {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.background{
+    background-image: url(images/background.JPG);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+
+.jumbotron {
+    background-color: transparent;
+    color: rgb(245, 245, 245);
+}
+
+.plus {
+    padding: 60px;
+}
+
+.project-margin {
+    margin-bottom: 30px;
+}
+
+.txt {
+    font-size: 35px;
+}
+
+.txt2 {
+    font-size: 30px;
+}
+
+.padding-top {
+    padding-top: 10px;
+}
