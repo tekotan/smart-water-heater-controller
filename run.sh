@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-forever start -c sudo python 3 run_server.py
+sudo python3 run_server.py >> log.txt & 
 source env/bin/activate
-python gui/guizero_gui.py
-forever stop run_server.py
+cd gui
+python guizero_gui.py
