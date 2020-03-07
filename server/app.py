@@ -34,7 +34,7 @@ def change_state(on_or_off, vacation, temperature_perc, always_on):
     if temp_diff > 0:
         mo.update(0.3)
     else:
-        mo.update(-0.3)
+        mo.update(0.3)
     return "Worked"
 
 
