@@ -2,3 +2,5 @@
 *.npy
 **/__pycache__
 **/Webpage/bootstrap-4.1.2-dist
+*.ipynb
+**/.ipynb_checkpoints
