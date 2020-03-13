@@ -29,25 +29,44 @@ class DailyUsageEnv(py_environment.PyEnvironment):
             maximum=2,
             name="action"
         )
-        self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(1, ),
-            dtype=np.int32,
-            minimum=0,
-            maximum=2,
-            name="observation"
-        )
         self.num_steps = 0
         self.discount = 1
-        self.history_buffer = 1
-        self.time_step_freq = 15
+        self.history_buffer = 1  # days
+        self.time_step_freq = 15  # mins
         self._boiler_state = 0
         self._usage_state = 0
-        self._history = np.zeros((24*4))
+        self._history = np.zeros(
+            (self.history_buffer * 24 * 60 // self.time_step_freq,))
         self._day_usage = np.array([])
         self._dummy_boiler = Boiler()
+        self._observation_spec = {
+            "history": array_spec.BoundedArraySpec(
+                shape=(self.history_buffer * 24 * 60 // self.time_step_freq,),
+                dtype=np.int32,
+                minimum=0,
+                maximum=1,
+                name="history"
+            ),
+            "boiler_state": array_spec.BoundedArraySpec(
+                shape=(1,),
+                dtype=np.int32,
+                minimum=0,
+                maximum=1,
+                name="boiler_state"
+            ),
+            "usage_state": array_spec.BoundedArraySpec(
+                shape=(1,),
+                dtype=np.int32,
+                minimum=0,
+                maximum=1,
+                name="usage_state"
+            )
+
+        }
+
     def observation_spec(self):
         """Return observation_spec."""
-        return self.observation_spec
+        return self._observation_spec
 
     def action_spec(self):
         """Return action_spec."""
@@ -55,15 +74,15 @@ class DailyUsageEnv(py_environment.PyEnvironment):
 
     def _reset(self):
         """Return initial_time_step."""
-        if self._history.shape[0] < (self.history_buffer * 24 * 60 // 15):
-            self._history = np.append(self._history, self._day_usage)
-        else:
-            self._history = np.delete(self._history, np.s_[:24 * 60 // 15])
-            self._history = np.append(self._history, self._day_usage)
-        self._day_usage = np.array([])
         self.num_steps = 0
         self._dummy_boiler.reset_states()
-        return ts.restart((self._boiler_state, self._usage_state, self._history, self._day_usage))
+        return ts.restart(
+            {
+                "history": self._history.astype(np.int32),
+                "boiler_state": np.array([self._boiler_state]),
+                "usage_state": np.array([self._usage_state])
+            }
+        )
 
     def _step(self, action):
         """Apply action and return new time_step."""
@@ -75,8 +94,13 @@ class DailyUsageEnv(py_environment.PyEnvironment):
         elif action == 2:
             self._boiler_state = 0
         if self.num_steps > 24 * 60 / 15:
-            return ts.termination((self._boiler_state, self._usage_state, self._history, self._day_usage), 0.0)
-        self._day_usage = np.append(self._day_usage, [self._usage_state])
+            return ts.termination({
+                "history": self._history.astype(np.int32),
+                "boiler_state": np.array([self._boiler_state]),
+                "usage_state": np.array([self._usage_state])
+            }, 0.0)
+        self._history = np.delete(self._history, (0))
+        self._history = np.append(self._history, [self._usage_state])
         self._usage_state = self._dummy_boiler.get_usage_state()
 
         if self._usage_state and self._boiler_state:
@@ -87,13 +111,11 @@ class DailyUsageEnv(py_environment.PyEnvironment):
             reward = 5
         elif not self._usage_state and self._boiler_state:
             reward = -5
-        return ts.transition((
-                                self._boiler_state,
-                                self._usage_state,
-                                self._history,
-                                self._day_usage
-                            ), reward=reward, discount=self.discount)
-        
+        return ts.transition({
+            "history": self._history.astype(np.int32),
+            "boiler_state": np.array([self._boiler_state]),
+            "usage_state": np.array([self._usage_state])
+        }, reward=reward, discount=self.discount)
 
 
 # In[23]:
@@ -101,32 +123,20 @@ class DailyUsageEnv(py_environment.PyEnvironment):
 
 class Boiler:
     def __init__(self):
-        self.states = np.ones((24 * 60 // 15))
+        self.states = np.array([0] * 6 * 4 + [1] * 4 *
+                               4 + [0] * 6 * 4 + [1] * 4 * 4 + [0] * 4 * 4)
         self.generator = self.get_state_generator
+
     def get_state_generator(self):
         for i in self.states:
-            yield i
+            yield np.random.choice([i, 0, 1], p=[0.90, 0.05, 0.05])
+
     def get_usage_state(self):
         return next(self.generator)
+
     def reset_states(self):
         del self.generator
         self.generator = self.get_state_generator()
 
-
-# In[24]:
-
-
 env = DailyUsageEnv()
-
-
-# In[25]:
-
-
 utils.validate_py_environment(env, episodes=5)
-
-
-# In[ ]:
-
-
-
-
