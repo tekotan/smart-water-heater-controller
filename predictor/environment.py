@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[3]:
-
-
 import tensorflow as tf
 import numpy as np
 
@@ -15,10 +9,6 @@ from tf_agents.specs import array_spec
 from tf_agents.environments import wrappers
 from tf_agents.environments import suite_gym
 from tf_agents.trajectories import time_step as ts
-
-
-# In[22]:
-
 
 class DailyUsageEnv(py_environment.PyEnvironment):
     def __init__(self):
@@ -117,10 +107,6 @@ class DailyUsageEnv(py_environment.PyEnvironment):
             "usage_state": np.array([self._usage_state])
         }, reward=reward, discount=self.discount)
 
-
-# In[23]:
-
-
 class Boiler:
     def __init__(self):
         self.states = np.array([0] * 6 * 4 + [1] * 4 *
@@ -138,5 +124,6 @@ class Boiler:
         del self.generator
         self.generator = self.get_state_generator()
 
-env = DailyUsageEnv()
-utils.validate_py_environment(env, episodes=5)
+if __name__ == "__main__":
+    env = DailyUsageEnv()
+    utils.validate_py_environment(env, episodes=5)

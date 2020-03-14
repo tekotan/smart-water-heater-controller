@@ -1,6 +1,6 @@
 import requests
 
-BASE_SERVER_URL = "http://0.0.0.0:5000"
+BASE_SERVER_URL = "http://192.168.43.129:5000"
 
 
 def get_on_or_off():
