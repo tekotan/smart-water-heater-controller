@@ -1,3 +1,4 @@
+import os
 import base64
 import matplotlib
 import matplotlib.pyplot as plt
@@ -17,17 +18,31 @@ from tf_agents.policies import random_tf_policy
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
+from tf_agents.policies import policy_saver
 
-import environment
+
+import environment as environment
 import dqn_model as model
-import dqn_train_util as util
+import dqn_train_util as utils
+
+num_iterations = 200000
+initial_collect_steps = 1000
+collect_steps_per_iteration = 1
+replay_buffer_max_length = 100000
+
+batch_size = 64
+
+log_interval = 200
+
+num_eval_episodes = 10
+eval_interval = 5000
 
 train_py_env = environment.DailyUsageEnv()
 eval_py_env = environment.DailyUsageEnv()
 
 train_env = tf_py_environment.TFPyEnvironment(train_py_env)
 eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
-q_net = model.DQNModel()
+q_net = model.DQNModel(train_env)
 q_agent = model.DQNAgent(train_env, q_net)
 
 q_agent.agent.initialize()
@@ -41,7 +56,7 @@ random_policy = random_tf_policy.RandomTFPolicy(train_env.time_step_spec(),
 
 
 replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
-    data_spec=agent.collect_data_spec,
+    data_spec=q_agent.agent.collect_data_spec,
     batch_size=train_env.batch_size,
     max_length=replay_buffer_max_length)
 
@@ -55,20 +70,19 @@ dataset = replay_buffer.as_dataset(
 
 iterator = iter(dataset)
 
-q_agent.agent.train = common.function(agent.train)
+q_agent.agent.train = common.function(q_agent.agent.train)
 
 # Reset the train step
 q_agent.agent.train_step_counter.assign(0)
 
 # Evaluate the agent's policy once before training.
-avg_return = utils.compute_avg_return(eval_env, agent.policy, num_eval_episodes)
+avg_return = utils.compute_avg_return(eval_env, q_agent.agent.policy, num_eval_episodes)
 returns = [avg_return]
-
 for _ in range(num_iterations):
 
     # Collect a few steps using collect_policy and save to the replay buffer.
     for _ in range(collect_steps_per_iteration):
-        utils.collect_step(train_env, agent.collect_policy, replay_buffer)
+        utils.collect_step(train_env, q_agent.agent.collect_policy, replay_buffer)
 
     # Sample a batch of data from the buffer and update the agent's network.
     experience, unused_info = next(iterator)
@@ -91,3 +105,17 @@ plt.ylabel('Average Return')
 plt.xlabel('Iterations')
 plt.ylim(top=250)
 plt.savefig("reward.svg")
+
+checkpoint_dir = os.path.join("models", 'checkpoint')
+train_checkpointer = common.Checkpointer(
+    ckpt_dir=checkpoint_dir,
+    max_to_keep=1,
+    agent=q_agent.agent,
+    policy=q_agent.agent.policy,
+    replay_buffer=replay_buffer,
+    global_step=q_agent.agent.train_step_counter
+)
+policy_dir = os.path.join("models", 'policy')
+tf_policy_saver = policy_saver.PolicySaver(q_agent.agent.policy)
+
+train_checkpointer.save(q_agent.agent.train_step_counter)

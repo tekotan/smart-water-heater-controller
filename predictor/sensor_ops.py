@@ -3,12 +3,13 @@ import time
 
 GPIO.setmode(GPIO.BCM)
 PIR_PIN = 21
+def setup():
 
-GPIO.setup(PIR_PIN, GPIO.IN)
+    GPIO.setup(PIR_PIN, GPIO.IN)
 
-print("initializing sensor")
-time.sleep(2)
-print("active")
+    print("initializing sensor")
+    time.sleep(2)
+    print("active")
 
 
 def get_data():

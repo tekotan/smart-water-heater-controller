@@ -9,9 +9,12 @@ from tf_agents.specs import array_spec
 from tf_agents.environments import wrappers
 from tf_agents.environments import suite_gym
 from tf_agents.trajectories import time_step as ts
-
+try:
+    from boiler_state import Boiler
+except:
+    from predictor.boiler_state import Boiler
 class DailyUsageEnv(py_environment.PyEnvironment):
-    def __init__(self):
+    def __init__(self, train=True):
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(),
             dtype=np.int32,
@@ -28,7 +31,7 @@ class DailyUsageEnv(py_environment.PyEnvironment):
         self._history = np.zeros(
             (self.history_buffer * 24 * 60 // self.time_step_freq,))
         self._day_usage = np.array([])
-        self._dummy_boiler = Boiler()
+        self.boiler = Boiler(train=train)
         self._observation_spec = {
             "history": array_spec.BoundedArraySpec(
                 shape=(self.history_buffer * 24 * 60 // self.time_step_freq,),
@@ -65,7 +68,7 @@ class DailyUsageEnv(py_environment.PyEnvironment):
     def _reset(self):
         """Return initial_time_step."""
         self.num_steps = 0
-        self._dummy_boiler.reset_states()
+        self.boiler.reset_states()
         return ts.restart(
             {
                 "history": self._history.astype(np.int32),
@@ -91,7 +94,7 @@ class DailyUsageEnv(py_environment.PyEnvironment):
             }, 0.0)
         self._history = np.delete(self._history, (0))
         self._history = np.append(self._history, [self._usage_state])
-        self._usage_state = self._dummy_boiler.get_usage_state()
+        self._usage_state = self.boiler.get_usage_state()
 
         if self._usage_state and self._boiler_state:
             reward = 10
@@ -106,23 +109,6 @@ class DailyUsageEnv(py_environment.PyEnvironment):
             "boiler_state": np.array([self._boiler_state]),
             "usage_state": np.array([self._usage_state])
         }, reward=reward, discount=self.discount)
-
-class Boiler:
-    def __init__(self):
-        self.states = np.array([0] * 6 * 4 + [1] * 4 *
-                               4 + [0] * 6 * 4 + [1] * 4 * 4 + [0] * 4 * 4)
-        self.generator = self.get_state_generator
-
-    def get_state_generator(self):
-        for i in self.states:
-            yield np.random.choice([i, 0, 1], p=[0.90, 0.05, 0.05])
-
-    def get_usage_state(self):
-        return next(self.generator)
-
-    def reset_states(self):
-        del self.generator
-        self.generator = self.get_state_generator()
 
 if __name__ == "__main__":
     env = DailyUsageEnv()

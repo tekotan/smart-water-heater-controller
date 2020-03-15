@@ -18,22 +18,11 @@ from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
 
-num_iterations = 100000
-initial_collect_steps = 1000
-collect_steps_per_iteration = 1
-replay_buffer_max_length = 100000
-
-batch_size = 64
 learning_rate = 1e-3
-log_interval = 200
-
-num_eval_episodes = 10
-eval_interval = 5000
-
-fc_params = (10, )
+fc_layer_params = (10, )
 
 class DQNModel:
-    def __init__(self):
+    def __init__(self, environment):
         self.preprocessing_layers = {
             'history': tf.keras.models.Sequential([#tf.keras.layers.Reshape((96, 1), dtype=tf.int32),
                                                 #tf.keras.layers.LSTM(1),
@@ -45,11 +34,11 @@ class DQNModel:
 
         self.preprocessing_combiner = tf.keras.layers.Concatenate(axis=-1)
         self.q_net = q_network.QNetwork(
-            train_env.observation_spec(),
-            train_env.action_spec(),
+            environment.observation_spec(),
+            environment.action_spec(),
             fc_layer_params=fc_layer_params,
-            preprocessing_layers=preprocessing_layers,
-            preprocessing_combiner=preprocessing_combiner
+            preprocessing_layers=self.preprocessing_layers,
+            preprocessing_combiner=self.preprocessing_combiner
         )
 
 class DQNAgent:
