@@ -15,6 +15,11 @@ except:
     from predictor.boiler_state import Boiler
 class DailyUsageEnv(py_environment.PyEnvironment):
     def __init__(self, train=True):
+        self.HEATER_CAPACITY = 150 # liters
+        self.HEATING_POWER = 4 # kW
+        self.ROOM_TEMP = 72 # fahrenheit
+        self.COOLING_RATE = 0.16
+        self.HOT_WATER_THRES = 100 # fahrenheit
         self._action_spec = array_spec.BoundedArraySpec(
             shape=(),
             dtype=np.int32,
@@ -26,8 +31,10 @@ class DailyUsageEnv(py_environment.PyEnvironment):
         self.discount = 1
         self.history_buffer = 1  # days
         self.time_step_freq = 15  # mins
-        self._boiler_state = 0
-        self._usage_state = 0
+        self._boiler_state = 0 # boiler on or off
+        self._usage_state = 0 # is water being used or not
+        self._water_temperature = 72
+        self._cooling_temp_start = 72
         self._history = np.zeros(
             (self.history_buffer * 24 * 60 // self.time_step_freq,))
         self._day_usage = np.array([])
@@ -53,8 +60,14 @@ class DailyUsageEnv(py_environment.PyEnvironment):
                 minimum=0,
                 maximum=1,
                 name="usage_state"
-            )
-
+            ),
+            "water_temperature": array_spec.BoundedArraySpec(
+                shape=(1,),
+                dtype=np.int32,
+                minimum=70,
+                maximum=212,
+                name="water_temperature"
+            ),
         }
 
     def observation_spec(self):
@@ -69,45 +82,59 @@ class DailyUsageEnv(py_environment.PyEnvironment):
         """Return initial_time_step."""
         self.num_steps = 0
         self.boiler.reset_states()
+        self._water_temperature = 72
         return ts.restart(
             {
                 "history": self._history.astype(np.int32),
                 "boiler_state": np.array([self._boiler_state]),
-                "usage_state": np.array([self._usage_state])
+                "usage_state": np.array([self._usage_state]),
+                "water_temperature": np.array([self._water_temperature]).astype(np.int32),
             }
         )
 
     def _step(self, action):
         """Apply action and return new time_step."""
+        # Set water temperature according to equations in paper
+        if self._boiler_state == 1 and self._water_temperature <= 212:
+            self._water_temperature += (3600 * self.HEATING_POWER * self.time_step_freq / 60) / (4.2 * self.HEATER_CAPACITY)
+        elif self._boiler_state == 0:
+            self._water_temperature = self.ROOM_TEMP + (self._cooling_temp_start - self.ROOM_TEMP) * \
+                                        np.exp(-1 * self.COOLING_RATE * self.num_steps * self.time_step_freq / 60)
         if self.num_steps > 24 * 60 / 15:
             return self.reset()
+
         self.num_steps += 1
+
         if action == 1:
             self._boiler_state = 1
         elif action == 2:
             self._boiler_state = 0
+            self._cooling_temp_start = self._water_temperature
+
         if self.num_steps > 24 * 60 / 15:
             return ts.termination({
                 "history": self._history.astype(np.int32),
                 "boiler_state": np.array([self._boiler_state]),
-                "usage_state": np.array([self._usage_state])
+                "usage_state": np.array([self._usage_state]),
+                "water_temperature": np.array([self._water_temperature]).astype(np.int32),
             }, 0.0)
         self._history = np.delete(self._history, (0))
         self._history = np.append(self._history, [self._usage_state])
         self._usage_state = self.boiler.get_usage_state()
 
-        if self._usage_state and self._boiler_state:
+        if self._usage_state and self._water_temperature > self.HOT_WATER_THRES:
             reward = 10
-        elif self._usage_state and not self._boiler_state:
+        elif self._usage_state and self._water_temperature < self.HOT_WATER_THRES:
             reward = -100
-        elif not self._usage_state and not self._boiler_state:
-            reward = 5
-        elif not self._usage_state and self._boiler_state:
+        elif self._boiler_state:
             reward = -5
+        else:
+            reward = 0
         return ts.transition({
             "history": self._history.astype(np.int32),
             "boiler_state": np.array([self._boiler_state]),
-            "usage_state": np.array([self._usage_state])
+            "usage_state": np.array([self._usage_state]),
+            "water_temperature": np.array([self._water_temperature]).astype(np.int32),
         }, reward=reward, discount=self.discount)
 
 if __name__ == "__main__":

@@ -26,7 +26,7 @@ import dqn_model as model
 import dqn_train_util as utils
 
 num_iterations = 200000
-initial_collect_steps = 1000
+initial_collect_steps = 3000
 collect_steps_per_iteration = 1
 replay_buffer_max_length = 100000
 
@@ -34,7 +34,7 @@ batch_size = 64
 
 log_interval = 200
 
-num_eval_episodes = 10
+num_eval_episodes = 200
 eval_interval = 5000
 
 train_py_env = environment.DailyUsageEnv()

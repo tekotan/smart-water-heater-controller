@@ -10,7 +10,7 @@ class DummyBoiler:
 
     def get_state_generator(self):
         for i in self.states:
-            yield np.random.choice([i, 0, 1], p=[0.90, 0.05, 0.05])
+            yield np.random.choice([i, 1], p=[0.90, 0.10])
 
     def get_usage_state(self):
         return next(self.generator)
