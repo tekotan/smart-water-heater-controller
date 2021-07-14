@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 model_checkpoint_path: "ckpt-500000"
 all_model_checkpoint_paths: "ckpt-500000"
 all_model_checkpoint_timestamps: 1609347410.2059467
 last_preserved_timestamp: 1609325578.9377918
+=======
+model_checkpoint_path: "ckpt-1000"
+all_model_checkpoint_paths: "ckpt-1000"
+all_model_checkpoint_timestamps: 1584231803.5037127
+last_preserved_timestamp: 1584229482.467579
+>>>>>>> 55165102abec21fa62abbfd8c082ac9cf69ff62b
