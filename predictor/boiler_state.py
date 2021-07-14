@@ -3,14 +3,14 @@ import numpy as np
 THRESHOLD = 10
 
 class DummyBoiler:
-    def __init__(self):
-        self.states = np.array([0] * 6 * 4 + [1] * 4 *
-                               4 + [0] * 6 * 4 + [1] * 4 * 4 + [0] * 4 * 4)
-        self.generator = self.get_state_generator
+    def __init__(self, time_step_freq=15):
+        self.states = np.array([0] * 6 * (60//time_step_freq) + [1] * 4 *
+                               (60//time_step_freq) + [0] * 6 * (60//time_step_freq) + [1] * 4 * (60//time_step_freq) + [0] * 4 * (60//time_step_freq))
+        self.generator = self.get_state_generator()
 
     def get_state_generator(self):
         for i in self.states:
-            yield np.random.choice([i, 1], p=[0.90, 0.10])
+            yield np.random.choice([i, 0.5], p=[0.95, 0.05])
 
     def get_usage_state(self):
         return next(self.generator)
@@ -33,9 +33,9 @@ class RealBoiler:
         pass
 
 class Boiler:
-    def __init__(self, train=True):
+    def __init__(self, train=True, time_step_freq=15):
         if train:
-            self.core = DummyBoiler()
+            self.core = DummyBoiler(time_step_freq=time_step_freq)
         else:
             self.core = RealBoiler()
     def get_usage_state(self):

@@ -25,17 +25,19 @@ import environment as environment
 import dqn_model as model
 import dqn_train_util as utils
 
-num_iterations = 200000
-initial_collect_steps = 3000
-collect_steps_per_iteration = 1
-replay_buffer_max_length = 100000
+from tqdm import tqdm
 
-batch_size = 64
+num_iterations = 500000
+initial_collect_steps = 2000
+collect_steps_per_iteration = 1
+replay_buffer_max_length = 10000
+
+batch_size = 32
 
 log_interval = 200
 
-num_eval_episodes = 200
-eval_interval = 5000
+num_eval_episodes = 5
+eval_interval = 10000
 
 train_py_env = environment.DailyUsageEnv()
 eval_py_env = environment.DailyUsageEnv()
@@ -60,13 +62,13 @@ replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
     batch_size=train_env.batch_size,
     max_length=replay_buffer_max_length)
 
-
-utils.collect_data(train_env, random_policy, replay_buffer, steps=100)
+print("collecting data")
+utils.collect_data(train_env, random_policy, replay_buffer, steps=initial_collect_steps)
 
 dataset = replay_buffer.as_dataset(
     num_parallel_calls=3,
     sample_batch_size=batch_size,
-    num_steps=2).prefetch(3)
+    num_steps=3).prefetch(3)
 
 iterator = iter(dataset)
 
@@ -75,37 +77,7 @@ q_agent.agent.train = common.function(q_agent.agent.train)
 # Reset the train step
 q_agent.agent.train_step_counter.assign(0)
 
-# Evaluate the agent's policy once before training.
-avg_return = utils.compute_avg_return(eval_env, q_agent.agent.policy, num_eval_episodes)
-returns = [avg_return]
-for _ in range(num_iterations):
-
-    # Collect a few steps using collect_policy and save to the replay buffer.
-    for _ in range(collect_steps_per_iteration):
-        utils.collect_step(train_env, q_agent.agent.collect_policy, replay_buffer)
-
-    # Sample a batch of data from the buffer and update the agent's network.
-    experience, unused_info = next(iterator)
-    train_loss = q_agent.agent.train(experience).loss
-
-    step = q_agent.agent.train_step_counter.numpy()
-
-    if step % log_interval == 0:
-        print('step = {0}: loss = {1}'.format(step, train_loss))
-
-    if step % eval_interval == 0:
-        avg_return = utils.compute_avg_return(
-            eval_env, q_agent.agent.policy, num_eval_episodes)
-        print('step = {0}: Average Return = {1}'.format(step, avg_return))
-        returns.append(avg_return)
-
-iterations = range(0, num_iterations + 1, eval_interval)
-plt.plot(iterations, returns)
-plt.ylabel('Average Return')
-plt.xlabel('Iterations')
-plt.ylim(top=250)
-plt.savefig("reward.svg")
-
+# Checkpoint setup
 checkpoint_dir = os.path.join("models", 'checkpoint')
 train_checkpointer = common.Checkpointer(
     ckpt_dir=checkpoint_dir,
@@ -118,4 +90,40 @@ train_checkpointer = common.Checkpointer(
 policy_dir = os.path.join("models", 'policy')
 tf_policy_saver = policy_saver.PolicySaver(q_agent.agent.policy)
 
+# Evaluate the agent's policy once before training.
+print("computing avg return")
+avg_return = utils.compute_avg_return(eval_env, q_agent.agent.policy, num_eval_episodes)
+returns = [avg_return]
+for _ in tqdm(range(num_iterations)):
+
+    # Collect a few steps using collect_policy and save to the replay buffer.
+    for _ in range(collect_steps_per_iteration):
+        utils.collect_step(train_env, q_agent.agent.collect_policy, replay_buffer)
+
+    # Sample a batch of data from the buffer and update the agent's network.
+    experience, unused_info = next(iterator)
+    train_loss = q_agent.agent.train(experience).loss
+
+    step = q_agent.agent.train_step_counter.numpy()
+
+    # if step % log_interval == 0:
+    #     tqdm.write('step = {0}: loss = {1}'.format(step, train_loss))
+
+    if step % eval_interval == 0:
+        avg_return = utils.compute_avg_return(
+            eval_env, q_agent.agent.policy, num_eval_episodes)
+        tqdm.write('step = {0}: Average Return = {1}'.format(step, avg_return))
+        train_checkpointer.save(q_agent.agent.train_step_counter)
+        if avg_return > max(returns):
+            tf_policy_saver.save(policy_dir)
+        returns.append(avg_return)
+
+iterations = range(0, num_iterations + 1, eval_interval)
+plt.plot(iterations, returns)
+plt.ylabel('Average Return')
+plt.xlabel('Iterations')
+plt.ylim(top=250)
+plt.savefig("reward.svg")
+
 train_checkpointer.save(q_agent.agent.train_step_counter)
+tf_policy_saver.save("./models/policy_final")

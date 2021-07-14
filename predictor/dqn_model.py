@@ -19,17 +19,20 @@ from tf_agents.trajectories import trajectory
 from tf_agents.utils import common
 
 learning_rate = 1e-3
-fc_layer_params = (10, )
+fc_layer_params = (64, 8, )
 
 class DQNModel:
     def __init__(self, environment):
         self.preprocessing_layers = {
-            'history': tf.keras.models.Sequential([#tf.keras.layers.Reshape((96, 1), dtype=tf.int32),
-                                                #tf.keras.layers.LSTM(1),
-                                                #tf.keras.layers.Flatten(),
-                                                tf.keras.layers.Dense(50, activation="linear")]),
-            'boiler_state': tf.keras.layers.Dense(1, activation="linear"),
-            "usage_state": tf.keras.layers.Dense(1, activation="linear"),
+            'history': tf.keras.models.Sequential([
+                tf.keras.layers.Embedding(4, 16, input_length=1 * 24 * 60 // 15),
+                tf.keras.layers.LSTM(32),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(50, activation="relu")
+            ]),
+            'boiler_state': tf.keras.layers.Dense(1, activation="relu"),
+            "usage_state": tf.keras.layers.Dense(1, activation="relu"),
+            "water_temperature": tf.keras.layers.Dense(1, activation="relu"),
         }
 
         self.preprocessing_combiner = tf.keras.layers.Concatenate(axis=-1)
@@ -42,7 +45,7 @@ class DQNModel:
         )
 
 class DQNAgent:
-    def __init__(self, environment, model):
+    def __init__(self, environment, model, n_step_update=2, temp=0.6):
         self.optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=learning_rate)
         self.train_step_counter = tf.Variable(0)
         self.agent = dqn_agent.DqnAgent(
@@ -50,6 +53,9 @@ class DQNAgent:
             environment.action_spec(),
             q_network=model.q_net,
             optimizer=self.optimizer,
-            td_errors_loss_fn=common.element_wise_squared_loss,
-            train_step_counter=self.train_step_counter
+            td_errors_loss_fn=common.element_wise_huber_loss,
+            train_step_counter=self.train_step_counter,
+            n_step_update=n_step_update,
+            # epsilon_greedy=0.1,
+            # boltzmann_temperature=temp,
         )
